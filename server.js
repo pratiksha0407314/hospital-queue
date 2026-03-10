@@ -1,78 +1,103 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
+const db = require("./db");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
+dotenv.config();
 const app = express();
 const server = http.createServer(app);
-
-const io = new Server(server, {
-  cors: {
-    origin: "*", // Allow all origins for frontend
-    methods: ["GET", "POST"]
-  }
-});
+const io = new Server(server, { cors: { origin: "http://localhost:8463" } });
 
 app.use(cors());
 app.use(express.json());
 
-let queue = [];
-let currentServing = null;
-let tokenCounter = 1;
+// Helpers
+function getNextToken(emergency, callback) {
+  if (emergency) callback(0.5); // emergency priority
+  else db.get("SELECT MAX(token) as maxToken FROM patients", (err, row) => callback(row?.maxToken ? row.maxToken + 1 : 1));
+}
 
-// Register patient
-app.post("/register", (req, res) => {
-  const { name, phone, priority, department } = req.body;
-  const token = tokenCounter++;
+function authMiddleware(req,res,next){
+  const token=req.headers["authorization"]?.split(" ")[1];
+  if(!token) return res.status(401).json({error:"Unauthorized"});
+  jwt.verify(token,process.env.JWT_SECRET,(err,user)=>{
+    if(err) return res.status(403).json({error:"Forbidden"});
+    req.user=user;
+    next();
+  });
+}
 
-  const patient = { token, name, phone, priority, department };
-
-  // Insert emergency patients at the top
-  if(priority === "Emergency"){
-    queue.unshift(patient);
-  } else {
-    queue.push(patient);
-  }
-
-  io.emit("queueUpdate", queue);
-  res.status(200).json({ message: "Registered", token });
-});
-
-// Serve next patient
-app.post("/serveNext", (req, res) => {
-  if(queue.length === 0){
-    return res.status(400).json({ message: "Queue empty" });
-  }
-
-  currentServing = queue.shift();
-  io.emit("queueUpdate", queue);
-  io.emit("currentServing", currentServing);
-
-  // Optional: send SMS logic can go here if API available
-  console.log(`Serving token #${currentServing.token} - ${currentServing.name}`);
-
-  res.status(200).json({ message: "Serving next patient", currentServing });
-});
-
-// Get queue (optional)
-app.get("/queue", (req, res) => {
-  res.json(queue);
-});
-
-// Start server
-const PORT = 7000;
-
-server.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
-});
-
-io.on("connection", (socket) => {
-  console.log("New client connected");
-  // Send initial queue and current serving
-  socket.emit("queueUpdate", queue);
-  socket.emit("currentServing", currentServing);
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
+// Auth
+app.post("/signup",async(req,res)=>{
+  const {username,password}=req.body;
+  const hash=await bcrypt.hash(password,10);
+  db.run("INSERT INTO users (username,password) VALUES (?,?)",[username,hash],function(err){
+    if(err) return res.status(500).json({error:err.message});
+    res.json({id:this.lastID,username});
   });
 });
+
+app.post("/login",(req,res)=>{
+  const {username,password}=req.body;
+  db.get("SELECT * FROM users WHERE username=? ",username,async(err,user)=>{
+    if(!user || !(await bcrypt.compare(password,user.password))) return res.status(401).json({error:"Invalid credentials"});
+    const token=jwt.sign({id:user.id,username},process.env.JWT_SECRET,{expiresIn:"1d"});
+    res.json({token,username});
+  });
+});
+
+// Patients
+app.get("/patients",authMiddleware,(req,res)=>{
+  db.all("SELECT * FROM patients ORDER BY emergency DESC, token ASC",(err,rows)=>res.json(rows));
+});
+
+app.post("/patients",authMiddleware,(req,res)=>{
+  const {name,emergency,doctor_id}=req.body;
+  getNextToken(emergency,(token)=>{
+    db.run("INSERT INTO patients (name,token,emergency,doctor_id) VALUES (?,?,?,?)",[name,token,emergency?1:0,doctor_id||null],function(){
+      const newPatient={id:this.lastID,name,token,status:"waiting",emergency:emergency?1:0,doctor_id:doctor_id||null};
+      io.emit("patientAdded",newPatient);
+      res.json(newPatient);
+    });
+  });
+});
+
+app.put("/patients/:id/status",authMiddleware,(req,res)=>{
+  const {id}=req.params;
+  const {status} = req.body;
+  db.run("UPDATE patients SET status=? WHERE id=?",[status,id],function(){
+    io.emit("patientUpdated",{id,status});
+    res.json({id,status});
+  });
+});
+
+app.delete("/patients/:id",authMiddleware,(req,res)=>{
+  const {id}=req.params;
+  db.run("DELETE FROM patients WHERE id=? ",id,function(){
+    io.emit("patientRemoved",id);
+    res.json({id});
+  });
+});
+
+// Doctors
+app.get("/doctors",authMiddleware,(req,res)=>{
+  db.all("SELECT * FROM doctors",(err,rows)=>res.json(rows));
+});
+
+app.post("/doctors",authMiddleware,(req,res)=>{
+  const {name,specialization}=req.body;
+  db.run("INSERT INTO doctors (name,specialization) VALUES (?,?)",[name,specialization],function(){
+    const newDoctor={id:this.lastID,name,specialization};
+    io.emit("doctorAdded",newDoctor);
+    res.json(newDoctor);
+  });
+});
+
+// Socket
+io.on("connection",socket=>console.log("Client connected"));
+
+server.listen(process.env.PORT||5550,()=>console.log("Backend running on 5550"));
