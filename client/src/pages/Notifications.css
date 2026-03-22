@@ -1,0 +1,107 @@
+.notifyPage{
+
+min-height:100vh;
+padding:40px;
+
+background:linear-gradient(135deg,#0ea5e9,#6366f1);
+
+display:flex;
+flex-direction:column;
+align-items:center;
+
+color:white;
+
+}
+
+/* title */
+
+.title{
+
+font-size:38px;
+margin-bottom:30px;
+
+}
+
+/* back */
+
+.backBtn{
+
+align-self:flex-start;
+
+background:#111827;
+color:white;
+
+padding:10px 20px;
+
+border:none;
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+/* container */
+
+.notifyContainer{
+
+width:95%;
+
+display:flex;
+flex-direction:column;
+
+gap:20px;
+
+}
+
+/* card */
+
+.notifyCard{
+
+padding:22px;
+
+border-radius:14px;
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+font-size:18px;
+
+}
+
+/* types */
+
+.emergency{
+
+background:#dc2626;
+
+}
+
+.warning{
+
+background:#f59e0b;
+
+}
+
+.info{
+
+background:#2563eb;
+
+}
+
+/* button */
+
+.notifyCard button{
+
+background:#111827;
+color:white;
+
+border:none;
+
+padding:8px 16px;
+
+border-radius:6px;
+
+cursor:pointer;
+
+}

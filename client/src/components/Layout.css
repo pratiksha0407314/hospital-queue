@@ -1,0 +1,111 @@
+body{
+margin:0;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#4f46e5,#06b6d4);
+min-height:100vh;
+}
+
+/* HEADER */
+
+.topbar{
+display:flex;
+align-items:center;
+justify-content:space-between;
+background:white;
+padding:15px 30px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* LEFT */
+
+.leftSection{
+width:200px;
+}
+
+/* CENTER */
+
+.centerSection{
+text-align:center;
+flex:1;
+}
+
+.centerSection h1{
+margin:0;
+font-size:36px;
+}
+
+.datetime{
+font-size:18px;
+font-weight:600;
+margin-top:5px;
+}
+
+/* RIGHT */
+
+.rightSection{
+display:flex;
+gap:20px;
+width:200px;
+justify-content:flex-end;
+}
+
+.iconBtn{
+cursor:pointer;
+font-weight:600;
+}
+
+/* BACK BUTTON */
+
+.backBtn{
+padding:8px 15px;
+font-size:16px;
+cursor:pointer;
+}
+
+/* HOME MENU */
+
+.homeMenu{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+height:70vh;
+gap:30px;
+}
+
+.menuCard{
+
+background:white;
+
+width:350px;
+
+padding:30px;
+
+border-radius:15px;
+
+font-size:24px;
+
+display:flex;
+
+align-items:center;
+
+gap:20px;
+
+justify-content:center;
+
+cursor:pointer;
+
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+
+transition:0.3s;
+
+}
+
+.menuCard:hover{
+transform:scale(1.08);
+background:#eef2ff;
+}
+
+.icon{
+font-size:40px;
+}

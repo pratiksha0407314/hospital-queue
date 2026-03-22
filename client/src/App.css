@@ -1,0 +1,8 @@
+body {font-family: Arial,sans-serif;margin:0;padding:0;background:#f4f4f9;}
+.tab-buttons {display:flex;justify-content:center;margin-top:20px;gap:10px;}
+.tab-buttons button {padding:10px 20px;border:none;border-radius:8px;background:#3b82f6;color:white;cursor:pointer;transition:0.3s;}
+.tab-buttons button.active {background:#2563eb;}
+.tab-buttons button:hover {background:#60a5fa;}
+.main-content {padding:20px;}
+input,select {margin:5px;padding:5px;}
+button {margin-top:10px;}

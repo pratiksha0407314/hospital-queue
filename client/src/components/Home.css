@@ -1,0 +1,63 @@
+/* PAGE BACKGROUND */
+.page{
+min-height:100vh;
+background:linear-gradient(135deg,#3b82f6,#06b6d4);
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+/* CENTER MENU */
+.menu{
+margin-top:120px;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:40px;
+}
+
+/* CARD STYLE */
+.menuItem{
+width:260px;
+padding:25px;
+border-radius:18px;
+text-align:center;
+cursor:pointer;
+box-shadow:0 6px 18px rgba(0,0,0,0.2);
+transition:0.3s;
+color:white;
+}
+
+/* KEEP ICON BIG */
+.icon{
+font-size:80px;
+}
+
+/* TEXT */
+.menuItem p{
+font-size:22px;
+margin-top:8px;
+font-weight:bold;
+}
+
+/* HOVER EFFECT */
+.menuItem:hover{
+transform:scale(1.08);
+}
+
+/* DIFFERENT CARD COLORS */
+.menuItem:nth-child(1){
+background:#2563eb;
+}
+
+.menuItem:nth-child(2){
+background:#16a34a;
+}
+
+.menuItem:nth-child(3){
+background:#9333ea;
+}
+
+.menuItem:nth-child(4){
+background:#ea580c;
+}
